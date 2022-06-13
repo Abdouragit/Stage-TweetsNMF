@@ -19,5 +19,18 @@ afin de faire du "text processing". Cet-à-dire que l'on va faire
 des modifications textuelles avec.
 """
 
+import re
+import string
+# for text cleaning
+
+# ---- Importation des données
+
+pd.set_option('max_colwidth',150)
+
+df = pd.read_csv('inaug_speeches.csv',engine = 'python')
+
+df.head()
+
+
 
 
