@@ -85,9 +85,23 @@ print()
 print(df.head())
 
 
-# ---- Creer une fonction qui va préparer les données une premiere fois
+# ---- Creer une fonction qui va "pre-process" les données
 # ou un truc du genre
 
+#Je crois qu'on va faire des transformations dans le texte et remplacer des mots par d'autres
+
+def nouns (text):
+    '''Given a string of text, tokenize the text and pull out 
+    only nouns'''
+
+    #create mask to isolate words that are nouns
+    is_noun = lambda pos: pos[:2] == 'NN'
+
+    #store function to split string of words
+    #into a list of words (tokens)
+    tokenized = word_tokenize(text)
+
+    
 
 
 
