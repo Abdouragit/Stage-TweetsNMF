@@ -1,6 +1,8 @@
 # Bienvenue dans cette tentative de faire une NMF et + si affinité
 
-# ---- Importation des modules 
+
+
+# 1 ---- Importation des modules 
 
 from numpy import argsort
 import pandas as pd #on en aura besoin pour manipuler des dataframes mais aussi pour importer/exporter des données
@@ -25,27 +27,43 @@ import re
 import string
 # for text cleaning
 
-# ---- Importation des données
+
+
+
+# 2 ---- Importation des données
 
 pd.set_option('max_colwidth',150)
 
 df = pd.read_csv('Abdourahmane\inaug_speeches.csv',engine = 'python')
+# qu'est-ce que "engine" nous apporte comme information ?
 
 print()
 print(df.head()) # afin de voir les première lignes de donnée
 
-# ---- Isoler les données
+
+
+
+# 3 ---- Isoler les données
 
 """I’m going to make a dataframe of the President’s names and 
 speeches, and isolate to the first term inauguration speech, 
 because some President’s did not have a second term. This makes 
 for a corpus of documents with similar lengths."""
 
+"""
+Donc Anupama a décidé de s'en tenir aux discours d'inauguration
+de premier mandat des présidents. Car ils n'ont pas tous eu de 
+deuxième mandat.
+"""
+
+#select rows that are first term inaugural addresses
 df = df.drop_duplicates(subset=['Name'],keep='first')
+# comment sait-il que 'first' est dans inaugural addresses
 
 df = df.reset_index() #je ne sais pas ce qu'est l'index
 
 df = df[['Name','text']]
+# J'imagine qu'on ne conserve que ces deux colonnes de donnée
 
 df = df.set_index('Name')
 
@@ -53,7 +71,10 @@ print()
 print (df.head())
 
 
-# ---- Nettoyage des données
+
+
+
+# 4 ---- Nettoyage des données
 
 """I want to make all of the text in the speeches as comparable 
 as possible so I will create a cleaning function that removes 
@@ -77,6 +98,11 @@ def clean_text_round1(text): # je ne sais pas vraiment ce qu'on fait dans cette 
     text = re.sub('�',' ', text)
 
     return text
+"""
+La fonction ci dessus fait plein de choses. Elle enlève les 
+majuscules, enlève les textes entre crochet, la ponctuation. Elle
+enlève aussi les "read errors" et les mots contenant des nombres.
+"""
 
 round1 = lambda x: clean_text_round1(x)
 
@@ -87,7 +113,10 @@ print()
 print(df.head())
 
 
-# ---- Creer une fonction qui va "pre-process" les données
+
+
+
+# 5 ---- Creer une fonction qui va "pre-process" les données
 # ou un truc du genre
 
 #Je crois qu'on va faire des transformations dans le texte et remplacer des mots par d'autres
@@ -134,7 +163,10 @@ On dirait qu'on a enlevé toute la ponctuation, les majuscules ainsi que
 
 
 
-# ---- Creer la matrice document-mots (mots par document)
+
+
+
+# 6 ---- Creer la matrice document-mots (mots par document)
 
 """Here I added some stopwords to the stopword list so we don’t
  get words like ‘America’ in the topics as that is not super
@@ -144,6 +176,12 @@ On dirait qu'on a enlevé toute la ponctuation, les majuscules ainsi que
 
 # add additional stop words since we are recreating the document-term matrix
 stop_noun = ["america", 'today', 'thing']
+"""
+De ce que j'ai compris des explications de Mr Chrétiens, ce sont
+des mots qu'on enlève de façon arbitraire. C'est une façon de
+rajouter une touche d'humain dans le processus pour l'orienter.
+
+"""
 stop_words_noun_agg = text.ENGLISH_STOP_WORDS.union(stop_noun)
 
 # create a document-term matrix with only nouns
@@ -167,7 +205,10 @@ print(data_dtm_noun.head())
 """On dirait qu'on a isolé les noms des présidents"""
 
 
-# ---- Create function to display Topics
+
+
+
+# 7 ---- Create function to display Topics
 
 """To evaluate how useful the topics created by NMF are, 
 we need to know what they are. Here I create a function to display 
@@ -175,7 +216,8 @@ the top words activated for each topic."""
 
 """
 Je crois qu'on essaie là de savoir quels sont les mots les plus 
-présents dans les topics qu'on a créé.
+présents dans les topics qu'on a créé et si ces topics sont utiles
+(si elles ont du sens).
 """
 
 def display_topics(model, feature_names, num_top_words, topic_names = None) :
@@ -194,3 +236,36 @@ def display_topics(model, feature_names, num_top_words, topic_names = None) :
         
         print (", ".join([feature_names[i] for i in topic.argsort()[:-num_top_words - 1:-1]]))
 
+
+
+
+
+# 8 ---- Run NMF on Document Term Matrix 'V'
+#on va lancer la NMF sur notre matrice V
+
+nmf_model = NMF(2)
+
+# Learn an NMF model for given Document Term Matrix 'V'
+# Extract the document-topic matrix 'W'
+doc_topic = nmf_model.fit_transform(data_dtm_noun)
+
+# Extract top words from the topic-term matrix 'H'
+display_topics(nmf_model,tv_noun.get_feature_names(),5)
+
+
+
+
+
+# 9 ---- Iterate until you find useful Topics
+
+""" This is where the art comes in. As a basic dummy model, I usually
+run the text through a count vectorizer and then NMF to get an
+idea of what we are looking at. We can iterate through topic
+numbers, parts of speech, TF-IDF settings, adding stop words and
+likely so much more. Getting useful topics can be done by eye, and
+is definitely a challenge. """
+
+NMF_model = NMF(8)
+doc_topic = nmf_model.fit_transform(data_dtm_noun)
+
+display_topics(nmf, tv_noun.get_feature_names(), 5)
